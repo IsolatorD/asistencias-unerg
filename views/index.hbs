@@ -1,0 +1,135 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="#"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link text-light" href="/admin/login"><b>Admin</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+    <div class="mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" min="1" id="search" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary" id="marcar">Ingresar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-none alert alert-danger mt-4 animated fadeIn" id="error"></div>
+    <div class="row d-none animated fadeIn" id="ficha">
+        <div class="col-md-6 m-auto">
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="status" class="text-primary"><b>Status</b></label>
+                            <input type="text" id="status" class="form-control" disabled="disabled">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-primary"><b>Fecha: <span id="fecha"></span> </b></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="nombre" class="text-primary"><b>Nombre</b></label>
+                            <input type="text" id="nombre" class="form-control" disabled="disabled">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="apellido" class="text-primary"><b>Apellido</b></label>
+                            <input type="text" id="apellido" class="form-control" disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="horaE" class="text-primary"><b>Hora Entrada</b></label>
+                            <input type="text" id="horaE" class="form-control" disabled="disabled" value="-:-:-">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="horaS" class="text-primary"><b>Hora Salida</b></label>
+                            <input type="text" id="horaS" class="form-control" disabled="disabled" value="-:-:-">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    window.setTimeout(() => {
+        $('#search').mask("00.000.000", {reverse: true});
+    }, 1000);
+    var marcar = document.getElementById('marcar');
+    marcar.addEventListener('click', (e) => {
+        e.preventDefault();
+        var hora = new Date();
+        var horaA = `${hora.getHours()}:${hora.getMinutes()}:${hora.getSeconds()}`;
+        var fecha = new Date();
+        var dia = fecha.getDate().length > 1 ? fecha.getDate() : `0${fecha.getDate()}`;
+        var mes = fecha.getMonth().length +1 > 1 ? fecha.getMonth() : `0${fecha.getMonth()}`;
+        var fechaA = `${fecha.getFullYear()}/${mes}/${dia}`
+        $.ajax({
+            url: '/marcar',
+            method: 'POST',
+            cache: false,
+            data: {
+                cedula: $('#search').val().trim(),
+                hora: horaA,
+                fecha: fechaA
+            },
+            success: (data) => {
+                console.log(data);
+                if(data.code == 404) {
+                    $('#search').val('');
+                    $('#error').removeClass('d-none');
+                    $('#error').text(data.msg);
+                    window.setTimeout(() => {
+                        $('#error').addClass('d-none');
+                    }, 3000);
+                } else if(data.code == 200){
+                    $('#search').val('');
+                    $('#nombre').val(data.personal.nombre);
+                    $('#apellido').val(data.personal.apellido);
+                    $('#status').val(data.asist.status);
+                    $('#fecha').text(data.asist.fecha);
+                    $('#horaE').val(data.asist.horaEntrada);
+                    $('#horaS').val(data.asist.horaSalida != null ? data.asist.horaSalida : '-:-:-');
+                    $('#ficha').removeClass('d-none');
+                    window.setTimeout(() => {
+                        $('#ficha').addClass('d-none');
+                    }, 3000);
+                } else if(data.code == 402) {
+                    $('#search').val('');
+                    $('#error').removeClass('d-none');
+                    $('#error').text(data.msg);
+                    window.setTimeout(() => {
+                        $('#error').addClass('d-none');
+                    }, 3000);
+                } else {
+                    $('#search').val('');
+                    $('#error').removeClass('d-none');
+                    $('#error').text('Ocurrio un error, Intente de nuevo');
+                    window.setTimeout(() => {
+                        $('#error').addClass('d-none');
+                    }, 3000);
+                }
+            },
+            error: (err) => {
+                $('#error').removeClass('d-none');
+                $('#error').text('Ocurrio un error, Intente de nuevo');
+                window.setTimeout(() => {
+                    $('#error').addClass('d-none');
+                }, 3000);
+                console.log(err);
+            }
+        });
+    }, false);
+</script>

@@ -1,0 +1,162 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="/admin"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link active text-light" href="#"><b>Administrador</b></a>
+      <a class="nav-item nav-link text-light" href="/admin"><b>Inicio</b></a>
+      <a class="nav-item nav-link text-light" href="/admin/login"><b>Salir</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12 col-md-8 offset-2">
+            <div class="row">
+                <div class="col-sm-8 col-md-4">
+                    <div class="form-group mt-4 mb-4">
+                        <label for="search"><b>Buscar</b></label>
+                        <input type="text" placeholder="Ingrese Cedula" id="search" class="form-control">
+                    </div>
+                </div>
+                <div class="col-sm-4 col-md-2 mt-4">
+                    <div class="mt-4 md-4">
+                        <button id="buscar" class="btn btn-primary mt-2">Buscar</button>
+                    </div>
+                </div>
+            </div>
+            <div id="aS" class="alert alert-success d-none animated fadeIn">Personal Actualizado!</div>
+            <div id="aE" class="alert alert-danger d-none animated fadeIn"></div>
+            <div class="card d-none" id="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="cedula"><b>cedula</b></label>
+                            <input type="text" id="cedula" class="form-control">
+                            <input type="hidden" id="id">
+                            <div class="invalid-feedback" id="invalid-ci">Este campo es Obligatorio</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="nombre"><b>Nombre</b></label>
+                            <input type="text" id="nombre" class="form-control">
+                            <div class="invalid-feedback" id="invalid-nom">Este campo es Obligatorio</div>
+                        </div>
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="apellido"><b>Apellido</b></label>
+                            <input type="text" id="apellido" class="form-control">
+                            <div class="invalid-feedback" id="invalid-ape">Este campo es Obligatorio</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="correo"><b>Correo</b></label>
+                            <input type="email" id="correo" class="form-control">
+                        </div>
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="telefono"><b>Telefono</b></label>
+                            <input type="text" id="telefono" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="cargo"><b>Cargo</b></label>
+                            <input id="cargo" class="form-control" disabled="disabled">
+                            <div class="invalid-feedback" id="invalid-cargo">Este campo es Obligatorio</div>
+                        </div>
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="status"><b>Status</b></label>
+                            <select id="status" class="form-control">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 col-4">
+                            <button class="btn btn-block btn-primary" id="edit"><b>Actualizar</b></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.setTimeout(() => {
+        $('#search').mask("00.000.000", {reverse: true});
+        $('#cedula').mask("00.000.000", {reverse: true});
+        $('#telefono').mask('0000-0000000');
+        $('#buscar').click(() => {
+            var idC = $('#search').val()
+            $.ajax({
+                url: '/admin/show/'+idC,
+                method: 'GET',
+                success:(data) => {
+                    console.log(data);
+                    if(data.code === 200) {
+                        $('#aE').addClass('d-none');
+                        $('#id').val(data.personal._id);
+                        $('#cedula').val(data.personal.cedula);
+                        $('#nombre').val(data.personal.nombre);
+                        $('#apellido').val(data.personal.apellido);
+                        $('#status').val(data.personal.status);
+                        $('#cargo').val(data.cargosP.cargo);
+                        $('#correo').val(data.correosP.correo);
+                        $('#telefono').val(data.telefsP.telefono);
+                        $('#card').removeClass('d-none');
+                    } else if(data.code === 404) {
+                        $('#aE').text('No se ha encontrado el registro');
+                        $('#aE').removeClass('d-none');
+                    } else {
+                        $('#aE').text('Ha ocurrido un Error, intente de nuevo');
+                        $('#aE').removeClass('d-none');
+                    }
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        });
+        $('#edit').click(() => {
+            var obj = { 
+                cedula: $('#cedula').val(),
+                nombre: $('#nombre').val(),
+                apellido: $('#apellido').val(),
+                cargo: $('#cargo').val(),
+                correo: $('#correo').val(),
+                telefono:$('#telefono').val(),
+                status: $('#status').val()
+            };
+            $.ajax({
+                url: '/admin/edit/'+$('#id').val(),
+                method: 'PUT',
+                data: obj,
+                success: (data) => {
+                    if(data.code === 200) {
+                        $('#cedula').val('');
+                        $('#nombre').val('');
+                        $('#apellido').val('');
+                        $('#cargo').val('');
+                        $('#correo').val('');
+                        $('#telefono').val('');
+                        $('#card').addClass('d-none');
+                        $('#aS').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aS').addClass('d-none');
+                        }, 3000);
+                    }
+                    console.log(data);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            })
+        });
+    }, 1000);
+</script>

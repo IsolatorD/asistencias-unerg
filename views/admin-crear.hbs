@@ -1,0 +1,151 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="/admin"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link active text-light" href="#"><b>Administrador</b></a>
+      <a class="nav-item nav-link text-light" href="/admin"><b>Inicio</b></a>
+      <a class="nav-item nav-link text-light" href="/admin/login"><b>Salir</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 animated fadeIn">
+    <div class="row">
+        <div class="col-sm-12 col-md-8 offset-2">
+            <div id="aS" class="alert alert-success d-none animated fadeIn">Personal Registrado!</div>
+            <div id="aE" class="alert alert-danger d-none animated fadeIn"></div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="cedula"><b>cedula</b></label>
+                            <input type="text" id="cedula" class="form-control">
+                            <div class="invalid-feedback" id="invalid-ci">Este campo es Obligatorio</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="nombre"><b>Nombre</b></label>
+                            <input type="text" id="nombre" class="form-control">
+                            <div class="invalid-feedback" id="invalid-nom">Este campo es Obligatorio</div>
+                        </div>
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="apellido"><b>Apellido</b></label>
+                            <input type="text" id="apellido" class="form-control">
+                            <div class="invalid-feedback" id="invalid-ape">Este campo es Obligatorio</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="correo"><b>Correo</b></label>
+                            <input type="email" id="correo" class="form-control">
+                        </div>
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="telefono"><b>Telefono</b></label>
+                            <input type="text" id="telefono" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-12 col-md-6">
+                            <label for="cargo"><b>Cargo</b></label>
+                            <input type="text" id="cargo" class="form-control" disabled="disabled" value="Administrativo">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 col-4">
+                            <button class="btn btn-block btn-primary" id="registrar"><b>Registrar</b></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.setTimeout(() => {
+        $('#cedula').mask("00.000.000", {reverse: true});
+        $('#telefono').mask('0000-0000000');
+    }, 1000);
+    var registrar = document.getElementById('registrar');
+    registrar.addEventListener('click', (e) => {
+        if($('#cedula').val() != '' && $('#nombre').val() != '' && $('#apellido').val() != '' && $('#cargo').val() != '') {
+            var objData = {
+                cedula: $('#cedula').val().trim(),
+                nombre: $('#nombre').val().trim(),
+                apellido: $('#apellido').val().trim(),
+                correo: $('#correo').val().trim(),
+                telefono:  $('#telefono').val().trim(),
+                cargo: $('#cargo').val().trim()
+            }
+            $.ajax({
+                url: '/admin/new',
+                method: 'POST',
+                data: objData,
+                cache: false,
+                success: (data) => {
+                    console.log(data);
+                    if(data.code == 200) {
+                        $('#cedula').val('');
+                        $('#nombre').val('');
+                        $('#apellido').val('');
+                        $('#correo').val('');
+                        $('#telefono').val('');
+                        $('#cargo').val('');
+                        $('#aS').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aS').addClass('d-none');
+                        }, 4000);
+                    } else  if(data.code == 402){
+                        $('#aE').text(data.msg);
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 4000);
+                    }else {
+                        $('#aE').text('Ha ocurrido un error, Intente de nuevo!');
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 4000);
+                    }
+                },
+                error: (err) => {
+                    console.error(err);
+                }
+            });
+        } else {
+            if($('#cedula').val() == '') {
+                $('#invalid-ci').show();
+                $('#cedula').addClass('border-danger')
+            } else {
+                $('#invalid-ci').hide();
+                $('#cedula').removeClass('border-danger')
+            }
+            if($('#nombre').val() == '') {
+                $('#invalid-nom').show();
+                $('#nombre').addClass('border-danger')
+            } else {
+                $('#invalid-nom').hide();
+                $('#nombre').removeClass('border-danger')
+            }
+            if($('#apellido').val() == '') {
+                $('#invalid-ape').show();
+                $('#apellido').addClass('border-danger')
+            } else {
+                $('#invalid-ape').hide();
+                $('#apellido').removeClass('border-danger')
+            }
+            if($('#cargo').val() == '') {
+                $('#invalid-cargo').show();
+                $('#cargo').addClass('border-danger');
+            } else {
+                $('#invalid-cargo').hide();
+                $('#cargo').removeClass('border-danger')
+            }
+        }
+    });
+</script>

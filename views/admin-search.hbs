@@ -1,0 +1,74 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="/admin"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link active text-light" href="#"><b>Administrador</b></a>
+      <a class="nav-item nav-link text-light" href="/admin"><b>Inicio</b></a>
+      <a class="nav-item nav-link text-light" href="/admin/login"><b>Salir</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 animated fadeIn">
+  <div class="row">
+    <div class="col-sm-12 col-md-10">
+      <table id="tabla">
+        <thead>
+          <th>#</th>
+          <th>Cedula</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Cargo</th>
+          <th>Status</th>
+        </thead>
+        <tbody id="tbody">
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.setTimeout(() => {
+    $.ajax({
+      url: '/admin/listar',
+      method: 'GET',
+      cache: false,
+      success: (data) => {
+        console.log(data);
+        if(data.code === 200) {
+          $.each(data.personales, (i, j) => {
+            $('#tbody').append(`<tr>
+                                  <td>${i++}</td>
+                                  <td>${j.ciPersonal.cedula}</td>
+                                  <td>${j.ciPersonal.nombre}</td>
+                                  <td>${j.ciPersonal.apellido}</td>
+                                  <td>${j.cargo}</td>
+                                  <td>${j.ciPersonal.status == "true" ? "Activo" : "Inactivo" }</td>
+                                </tr>`);
+          });
+          $('#tabla').dataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'excel', 'pdf'
+            ]
+          });
+        } else if (data.code === 404) {
+          $('#tabla').dataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'excel', 'pdf'
+            ]
+          });
+        }
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }, 1000);
+</script>

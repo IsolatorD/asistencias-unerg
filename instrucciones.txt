@@ -1,0 +1,8 @@
+//Para utilizar
+
+1- Instalar una version actualizada de NodeJS.
+2- Instalar una version actualizada de MongoDB.
+3- Abrir 2 consolas de sistema.
+4- En un consola colocar el comando "mongod", este inicializa el gestor de base de datos.
+5- En la otra consola colocar el comando "npm start", este inicializa el proyecto en el puerto 3000.
+6- Abrir un navegador y dirigirse a la url "localhost:3000", ahi estara el sistema visible.

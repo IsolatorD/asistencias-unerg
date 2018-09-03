@@ -1,0 +1,89 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="/"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link text-light" href="/"><b>Inicio</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container animated fadeIn">
+    <div class="row">
+        <div class="col-md-6 m-auto">
+            <div class="alert alert-danger d-none animated fadeIn mt-4" id="error">
+                ¡Acceso Denegado!
+            </div>
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="nombre" class="text-primary"><b>Usuario</b></label>
+                            <input type="text" id="user" class="form-control">
+                            <div class="invalid-feedback" id="invalid-user">Este campo es Obligatorio</div>
+                        </div>
+                        <div class="col-md-12 mt-1">
+                            <label for="apellido" class="text-primary"><b>Password</b></label>
+                            <input type="password" id="pass" class="form-control">
+                            <div class="invalid-feedback" id="invalid-pass">Este campo es Obligatorio</div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <button class="btn btn-primary btn-block" id="login">Entrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var login = document.getElementById('login');
+    login.addEventListener('click', (e) => {
+        e.preventDefault();
+        if($('#user').val() != '' && $('#pass').val() != '') {
+            $.ajax({
+                url: '/admin/login',
+                method: 'POST',
+                cache: false,
+                data: {
+                    user: $('#user').val().trim(),
+                    pass: $('#pass').val().trim()
+                },
+                success: (data) => {
+                    console.log(data);
+                    if(data.access == true) {
+                        location.href = '/admin';
+                    } else {
+                        $('#error').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#error').addClass('d-none');
+                        }, 1600);
+                    }
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        } else {
+            if($('#user').val() != '') {
+                $('#user').removeClass('border-danger');
+                $('#invalid-user').hide();
+            } else {
+                $('#user').addClass('border-danger');
+                $('#invalid-user').show();
+            }
+            if($('#pass').val() != '') {
+                $('#pass').removeClass('border-danger');
+                $('#invalid-pass').hide();
+            } else {
+                $('#pass').addClass('border-danger');
+                $('#invalid-pass').show();
+            }
+        }
+    }, false);
+</script>

@@ -1,0 +1,244 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+  <a class="navbar-brand text-light" href="/admin"><b>DACE</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="navbar-nav">
+      <a class="nav-item nav-link active text-light" href="#"><b>Administrador</b></a>
+      <a class="nav-item nav-link text-light" href="/admin"><b>Inicio</b></a>
+      <a class="nav-item nav-link text-light" href="/admin/login"><b>Salir</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 animated fadeIn">
+  <div class="row">
+    <div class="col-sm-8 col-md-2">
+        <div class="form-group mt-4 mb-4">
+            <label for="search"><b>Cedula</b></label>
+            <input type="text" placeholder="Ingrese Cedula" id="cedula" class="form-control">
+            <div class="invalid-feedback" id="invalid-ci">Este campo es Obligatorio</div>
+        </div>
+    </div>
+    <div class="col-sm-8 col-md-2">
+        <div class="form-group mt-4 mb-4">
+            <label for="search"><b>Fecha Inicial</b></label>
+            <input type="text" placeholder="YYYY/MM/DD" id="fechaI" class="form-control">
+            <div class="invalid-feedback" id="invalid-fechaI">Este campo es Obligatorio</div>
+        </div>
+    </div>
+    <div class="col-sm-8 col-md-2">
+        <div class="form-group mt-4 mb-4">
+            <label for="search"><b>Fecha Final</b></label>
+            <input type="text" placeholder="YYYY/MM/DD" id="fechaF" class="form-control">
+            <div class="invalid-feedback" id="invalid-fechaF">Este campo es Obligatorio</div>
+        </div>
+    </div>
+    <div class="col-sm-4 col-md-2 mt-4">
+        <div class="mt-4 md-4">
+            <button id="buscar" class="btn btn-primary mt-2">Buscar</button>
+            <button id="all" class="btn btn-success mt-2">Todas</button>
+        </div>
+    </div>
+  </div>
+  <div id="aE" class="alert alert-danger d-none animated fadeIn"></div>
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+        <div  id="card" class="card d-none animated fadeIn">
+            <div class="card-body">
+                <div class="col-sm-12 col-md-12">
+                    <table id="tabla">
+                        <thead>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Hora de Entrada</th>
+                            <th>Hora de Salida</th>
+                            <th>Status</th>
+                        </thead>
+                        <tbody id="tbody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>    
+        </div>
+    </div>
+  </div>
+</div>
+
+<script> 
+  window.setTimeout(() => {
+    $('#cedula').mask("00.000.000", {reverse: true});
+    $('#fechaI').mask("9999/99/99");
+    $('#fechaF').mask('9999/99/99');
+    $('#buscar').click(() => {
+        if($('#cedula').val() != '' && $('#fechaI').val() != '' && $('#fechaF').val() != '') {
+            var table = $('#tabla').DataTable();
+            table.destroy();
+            $('#tbody tr').remove();
+            $('#card').addClass('d-none');
+            $('#cedula').removeClass('border-danger');
+            $('#invalid-ci').hide();
+            $('#fechaI').removeClass('border-danger');
+            $('#invalid-fechaI').hide();
+            $('#fechaF').removeClass('border-danger');
+            $('#invalid-fechaF').hide();
+            var idC = $('#cedula').val();
+            var fechaI = $('#fechaI').val();
+            var fechaF = $('#fechaF').val();
+            $.ajax({
+                url: '/admin/pdf/'+idC,
+                method: 'POST',
+                data: {
+                  fechaI,
+                  fechaF
+                },
+                success:(data) => {
+                    console.log(data);
+                    if(data.code === 200) {
+                        $('#aE').addClass('d-none');
+                        $('#card').removeClass('d-none');
+                        $.each(data.asistencias, (i, j) => {
+                            i++;
+                            $('#tbody').append(`<tr>
+                                                    <td>${i}</td>
+                                                    <td>${j.fecha}</td>
+                                                    <td>${j.horaEntrada}</td>
+                                                    <td>${j.horaSalida}</td>
+                                                    <td>${j.status}</td>
+                                                </tr>`);
+                        });
+                        $('#tabla').DataTable({
+                            dom: 'Bfrtip',
+                            buttons: [
+                                'copy', 'excel', 'pdf'
+                            ]
+                        });
+                    } else if(data.code === 402) {
+                        $('#aE').text(data.msg);
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    }else if(data.code === 404) {
+                        $('#aE').text('La cedula ingresada no se encuentra registrada');
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    } else {
+                        $('#aE').text('Ha ocurrido un Error, intente de nuevo');
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    }
+                },
+                error: (err) => {
+                    $('#aE').text('Ha ocurrido un Error, intente de nuevo');
+                    $('#aE').removeClass('d-none');
+                    window.setTimeout(() => {
+                        $('#aE').addClass('d-none');
+                    }, 3000);
+                    console.log(err);
+                }
+            });
+        } else {
+            if($('#cedula').val() != '') {
+                $('#cedula').removeClass('border-danger');
+                $('#invalid-ci').hide();
+            } else {
+                $('#cedula').addClass('border-danger');
+                $('#invalid-ci').show();
+            }
+            if($('#fechaI').val() != '') {
+                $('#fechaI').removeClass('border-danger');
+                $('#invalid-fechaI').hide();
+            } else {
+                $('#fechaI').addClass('border-danger');
+                $('#invalid-fechaI').show();
+            }
+            if($('#fechaF').val() != '') {
+                $('#fechaF').removeClass('border-danger');
+                $('#invalid-fechaF').hide();
+            } else {
+                $('#fechaF').addClass('border-danger');
+                $('#invalid-fechaF').show();
+            }
+        }
+    });
+    $('#all').click(() => {
+        if($('#cedula').val() != '') {
+            var table = $('#tabla').DataTable();
+            table.destroy();
+            $('#tbody tr').remove();
+            $('#card').addClass('d-none');
+            $('#cedula').removeClass('border-danger');
+            $('#invalid-ci').hide();
+            var idC = $('#cedula').val();
+            $.ajax({
+                url: '/admin/asistencias/alls/'+idC,
+                method: 'GET',
+                success:(data) => {
+                    console.log(data);
+                    if(data.code === 200) {
+                        $('#aE').addClass('d-none');
+                        $('#card').removeClass('d-none');
+                        $.each(data.asistencias, (i, j) => {
+                            i++;
+                            $('#tbody').append(`<tr>
+                                                    <td>${i}</td>
+                                                    <td>${j.fecha}</td>
+                                                    <td>${j.horaEntrada}</td>
+                                                    <td>${j.horaSalida}</td>
+                                                    <td>${j.status}</td>
+                                                </tr>`);
+                        });
+                        $('#tabla').DataTable({
+                            dom: 'Bfrtip',
+                            buttons: [
+                                'copy', 'excel', 'pdf'
+                            ]
+                        });
+                    } else if(data.code === 402) {
+                        $('#aE').text(data.msg);
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    }else if(data.code === 404) {
+                        $('#aE').text('La cedula ingresada no se encuentra registrada');
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    } else {
+                        $('#aE').text('Ha ocurrido un Error, intente de nuevo');
+                        $('#aE').removeClass('d-none');
+                        window.setTimeout(() => {
+                            $('#aE').addClass('d-none');
+                        }, 3000);
+                    }
+                },
+                error: (err) => {
+                    console.log(err);
+                    $('#aE').text('Ha ocurrido un Error, intente de nuevo');
+                    $('#aE').removeClass('d-none');
+                    window.setTimeout(() => {
+                        $('#aE').addClass('d-none');
+                    }, 3000);
+                }
+            });
+        } else {
+            if($('#cedula').val() != '') {
+                $('#cedula').removeClass('border-danger');
+                $('#invalid-ci').hide();
+            } else {
+                $('#cedula').addClass('border-danger');
+                $('#invalid-ci').show();
+            }
+        }
+    });
+  }, 1000);
+</script>
