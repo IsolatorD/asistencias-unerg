@@ -7,8 +7,8 @@ var mongoose = require('mongoose');
 var indexRouter = require('./routes/index');
 
 var app = express();
-
-mongoose.connect('mongodb://localhost:27017/asistencias', { useNewUrlParser: true }, (err) => {
+//mongodb://localhost:27017/asistencias
+mongoose.connect('mongodb://daniel:daniel1234@ds141796.mlab.com:41796/mediglobal', { useNewUrlParser: true }, (err) => {
   if(err) throw err;
   console.log('Conectado a la BD');
 });
